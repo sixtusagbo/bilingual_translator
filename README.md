@@ -14,20 +14,22 @@ This project fulfills Assignment 2: Project Documentation and Implementation req
 
 - **Source Language:** English (en)
 - **Target Language:** Spanish (es)
-- **Additional Languages:** French, German, Italian, Portuguese, Russian, Japanese, Korean, Chinese, Arabic, Hindi
+- **Supported Translation Pairs:** English ↔ Spanish (bidirectional)
 
 ### 2. Translation API Documentation
 
-- **API Provider:** MyMemory Translation API
-- **Organization:** Translated SRL (Italy)
-- **API Endpoint:** `https://api.mymemory.translated.net/get`
-- **Documentation:** [MyMemory API Docs](https://mymemory.translated.net/doc/spec.php)
+- **API Provider:** Google Translate API
+- **Organization:** Google LLC (Alphabet Inc.)
+- **API Endpoint:** `https://translation.googleapis.com/language/translate/v2`
+- **Documentation:** [Google Cloud Translation API](https://cloud.google.com/translate/docs/reference/rest)
 - **Features:**
-  - Free tier with 1000 words/day limit
-  - No authentication required
-  - Supports 100+ language pairs
+  - High-quality neural machine translation
+  - 500,000 characters per month free tier
+  - API key authentication required
+  - Supports 100+ languages
   - RESTful API with JSON responses
-  - CORS enabled for browser requests
+  - Global availability and reliability
+  - Excellent accuracy for English-Spanish translation
 
 ### 3. Stakeholder Analysis
 
@@ -44,10 +46,10 @@ This project fulfills Assignment 2: Project Documentation and Implementation req
 
 #### Secondary Stakeholders:
 
-3. **MyMemory/Translated SRL**
+3. **Google LLC (Google Cloud)**
 
    - _Reason:_ API service provider whose infrastructure powers the translations
-   - _Interest:_ Proper API usage and potential premium conversions
+   - _Interest:_ Proper API usage, service adoption, and potential premium conversions
 
 4. **Vercel (Hosting Provider)**
 
@@ -71,20 +73,22 @@ This project fulfills Assignment 2: Project Documentation and Implementation req
 
 ## 🚀 Features
 
-- **Real-time Translation:** Instant translation between 12 supported languages
+- **Real-time Translation:** Instant translation between English and Spanish
+- **High-Quality Translation:** Powered by Google's neural machine translation
 - **Responsive Design:** Works seamlessly on desktop, tablet, and mobile devices
-- **Language Swapping:** Quick swap between source and target languages
+- **Language Swapping:** Quick swap between English and Spanish
 - **Error Handling:** Comprehensive error messages and validation
 - **Loading States:** Visual feedback during translation requests
 - **Dark Mode Support:** Automatic dark/light theme detection
 - **Accessibility:** Keyboard navigation and screen reader support
+- **Global Accessibility:** Works reliably from Nigeria and worldwide
 
 ## 🛠 Technology Stack
 
 - **Frontend Framework:** Next.js 15 (React 18)
 - **Language:** TypeScript
 - **Styling:** Tailwind CSS
-- **API:** MyMemory Translation API
+- **API:** Google Translate API
 - **Deployment:** Vercel
 - **Package Manager:** npm
 
@@ -128,13 +132,38 @@ bilingual_translator/
    npm install
    ```
 
-3. Start the development server:
+3. Set up Google Translate API:
+
+   a. Go to [Google Cloud Console](https://console.cloud.google.com/)
+
+   b. Create a new project or select existing one
+
+   c. Enable the Cloud Translation API:
+
+   - Go to "APIs & Services" > "Library"
+   - Search for "Cloud Translation API"
+   - Click "Enable"
+
+   d. Create API credentials:
+
+   - Go to "APIs & Services" > "Credentials"
+   - Click "Create Credentials" > "API Key"
+   - Copy the generated API key
+
+   e. Configure environment variables:
+
+   ```bash
+   cp .env.local.example .env.local
+   # Edit .env.local and add your API key
+   ```
+
+4. Start the development server:
 
    ```bash
    npm run dev
    ```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser
+5. Open [http://localhost:3000](http://localhost:3000) in your browser
 
 ### Build for Production
 
@@ -152,15 +181,43 @@ The application is configured for seamless deployment on Vercel:
 3. **Environment:** Node.js 18.x runtime
 4. **CDN:** Global edge network for fast content delivery
 
-### Manual Deployment
+### Deployment Steps
 
-```bash
-# Install Vercel CLI
-npm i -g vercel
+1. **Push to GitHub:**
 
-# Deploy
-vercel --prod
-```
+   ```bash
+   git add .
+   git commit -m "Complete bilingual translator"
+   git push origin main
+   ```
+
+2. **Deploy to Vercel:**
+
+   - Go to [vercel.com](https://vercel.com) and sign in
+   - Click "New Project" and import your GitHub repository
+   - Add environment variable:
+     - Name: `NEXT_PUBLIC_GOOGLE_TRANSLATE_API_KEY`
+     - Value: Your Google Translate API key
+   - Click "Deploy"
+
+3. **Manual Deployment (Alternative):**
+
+   ```bash
+   # Install Vercel CLI
+   npm i -g vercel
+
+   # Set environment variable
+   vercel env add NEXT_PUBLIC_GOOGLE_TRANSLATE_API_KEY
+
+   # Deploy
+   vercel --prod
+   ```
+
+### Important Notes for Deployment
+
+- **API Key Security:** The API key is exposed in the frontend (NEXT*PUBLIC*\*), so consider implementing usage restrictions in Google Cloud Console
+- **Domain Restrictions:** Restrict your API key to your domain in Google Cloud Console for security
+- **Quota Monitoring:** Monitor your API usage in Google Cloud Console to avoid unexpected charges
 
 ## 📖 Comprehensive Documentation Importance
 
@@ -200,9 +257,19 @@ This project demonstrates the critical importance of comprehensive documentation
 
 ```javascript
 const response = await fetch(
-  `https://api.mymemory.translated.net/get?q=${encodeURIComponent(
-    text
-  )}&langpair=${sourceLang}|${targetLang}`
+  `https://translation.googleapis.com/language/translate/v2?key=${apiKey}`,
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      q: sourceText,
+      source: sourceLang,
+      target: targetLang,
+      format: "text",
+    }),
+  }
 );
 ```
 
@@ -210,21 +277,25 @@ const response = await fetch(
 
 ```json
 {
-  "responseData": {
-    "translatedText": "Translated text here"
-  },
-  "responseStatus": 200,
-  "responseDetails": "",
-  "matches": []
+  "data": {
+    "translations": [
+      {
+        "translatedText": "Translated text here",
+        "detectedSourceLanguage": "en"
+      }
+    ]
+  }
 }
 ```
 
 ### Error Handling
 
+- API key validation
 - Network connectivity issues
-- API rate limiting
+- API quota limits (500,000 characters/month free)
 - Invalid language pairs
 - Empty input validation
+- Malformed requests
 
 ## 🎨 User Interface Design
 

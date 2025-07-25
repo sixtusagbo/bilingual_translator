@@ -10,16 +10,6 @@ interface Language {
 const languages: Language[] = [
   { code: "en", name: "English" },
   { code: "es", name: "Spanish" },
-  { code: "fr", name: "French" },
-  { code: "de", name: "German" },
-  { code: "it", name: "Italian" },
-  { code: "pt", name: "Portuguese" },
-  { code: "ru", name: "Russian" },
-  { code: "ja", name: "Japanese" },
-  { code: "ko", name: "Korean" },
-  { code: "zh", name: "Chinese" },
-  { code: "ar", name: "Arabic" },
-  { code: "hi", name: "Hindi" },
 ];
 
 export default function Home() {
@@ -40,17 +30,43 @@ export default function Home() {
     setError("");
 
     try {
-      // Using MyMemory API - free translation service
+      // Using Google Translate API
+      const apiKey = process.env.NEXT_PUBLIC_GOOGLE_TRANSLATE_API_KEY;
+
+      if (!apiKey) {
+        setError(
+          "API key not configured. Please add NEXT_PUBLIC_GOOGLE_TRANSLATE_API_KEY to your environment variables."
+        );
+        setIsLoading(false);
+        return;
+      }
+
       const response = await fetch(
-        `https://api.mymemory.translated.net/get?q=${encodeURIComponent(
-          sourceText
-        )}&langpair=${sourceLang}|${targetLang}`
+        `https://translation.googleapis.com/language/translate/v2?key=${apiKey}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            q: sourceText,
+            source: sourceLang,
+            target: targetLang,
+            format: "text",
+          }),
+        }
       );
 
       const data = await response.json();
 
-      if (data.responseStatus === 200) {
-        setTranslatedText(data.responseData.translatedText);
+      if (data.error) {
+        setError(`Translation failed: ${data.error.message}`);
+      } else if (
+        data.data &&
+        data.data.translations &&
+        data.data.translations[0]
+      ) {
+        setTranslatedText(data.data.translations[0].translatedText);
       } else {
         setError("Translation failed. Please try again.");
       }
@@ -175,7 +191,7 @@ export default function Home() {
 
         {/* Footer */}
         <footer className="mt-16 text-center text-gray-600 dark:text-gray-400">
-          <p>Powered by MyMemory Translation API</p>
+          <p>Powered by Google Translate API</p>
         </footer>
       </div>
     </div>
